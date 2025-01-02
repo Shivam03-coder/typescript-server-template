@@ -1,0 +1,43 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  emailAddress String   @unique
+  password     String
+  name         String
+  imageUrl     String?
+  role         Role     @default(user)
+  token        Token[]
+  Otp          Otp?
+  UserVerified Boolean? @default(false)
+}
+
+model Token {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  refreshToken String   @unique
+  createdAt    DateTime @default(now())
+  expiresAt    DateTime
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Otp {
+  id       String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId   String   @unique @db.ObjectId
+  otp      String
+  expireAt DateTime
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  cartedAt DateTime @default(now())
+}
+
+enum Role {
+  user
+  admin
+}
